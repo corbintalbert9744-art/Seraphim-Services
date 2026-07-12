@@ -1,1 +1,3 @@
 data/keys.json
+dist/
+node_modules/

@@ -1,14 +1,19 @@
 import { app, BrowserWindow } from "electron";
+import { setDataDirectory } from "./storage.mjs";
 import { startServer } from "./server.mjs";
+
+const APP_ID = "com.seraphim.adminpanel";
 
 let mainWindow = null;
 let httpServer = null;
-let serverPort = null;
+
+if (process.platform === "win32") {
+  app.setAppUserModelId(APP_ID);
+}
 
 async function createWindow() {
   const { server, port } = await startServer(0);
   httpServer = server;
-  serverPort = port;
 
   mainWindow = new BrowserWindow({
     width: 1440,
@@ -44,7 +49,12 @@ function shutdown() {
   }
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(async () => {
+  if (app.isPackaged) {
+    setDataDirectory(app.getPath("userData"));
+  }
+  await createWindow();
+});
 
 app.on("window-all-closed", () => {
   shutdown();

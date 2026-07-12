@@ -1,0 +1,50 @@
+{
+  "name": "seraphim-admin-panel",
+  "productName": "Seraphim Admin Panel",
+  "version": "1.0.0",
+  "description": "Seraphim license key admin panel",
+  "main": "electron-main.mjs",
+  "type": "module",
+  "author": "Seraphim",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win",
+    "build:portable": "electron-builder --win portable"
+  },
+  "build": {
+    "appId": "com.seraphim.adminpanel",
+    "productName": "Seraphim Admin Panel",
+    "asar": true,
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "**/*",
+      "!dist/**",
+      "!data/keys.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "Seraphim-Admin-Panel-Setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Seraphim Admin Panel",
+      "runAfterFinish": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^35.1.5",
+    "electron-builder": "^25.1.8"
+  }
+}

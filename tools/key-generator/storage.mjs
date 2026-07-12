@@ -4,8 +4,14 @@ import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
-const DATA_DIR = join(__dirname, "data");
-const DATA_FILE = join(DATA_DIR, "keys.json");
+
+let DATA_DIR = join(__dirname, "data");
+let DATA_FILE = join(DATA_DIR, "keys.json");
+
+export function setDataDirectory(baseDir) {
+  DATA_DIR = join(baseDir, "data");
+  DATA_FILE = join(DATA_DIR, "keys.json");
+}
 
 async function ensureStore() {
   await mkdir(DATA_DIR, { recursive: true });
