@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog } from "electron";
 import { setDataDirectory } from "./storage.mjs";
 import { startServer } from "./server.mjs";
 
-const APP_ID = "com.seraphim.adminpanel";
+const APP_ID = "com.seraphim.keyboardmacro";
 
 let mainWindow = null;
 let httpServer = null;
@@ -36,7 +36,7 @@ async function createWindow() {
     height: 900,
     minWidth: 1100,
     minHeight: 700,
-    title: "Seraphim Admin Panel",
+    title: "Seraphim Keyboard Macro",
     backgroundColor: "#0a0a0a",
     autoHideMenuBar: true,
     show: true,

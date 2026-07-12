@@ -1,8 +1,8 @@
 {
-  "name": "seraphim-admin-panel",
-  "productName": "Seraphim Admin Panel",
-  "version": "1.0.0",
-  "description": "Seraphim license key admin panel",
+  "name": "seraphim-keyboard-macro",
+  "productName": "Seraphim Keyboard Macro",
+  "version": "1.1.0",
+  "description": "Seraphim Keyboard Macro license key admin panel",
   "main": "electron-main.mjs",
   "type": "module",
   "author": "Seraphim",
@@ -14,8 +14,8 @@
     "build:installer": "electron-builder --win nsis"
   },
   "build": {
-    "appId": "com.seraphim.adminpanel",
-    "productName": "Seraphim Admin Panel",
+    "appId": "com.seraphim.keyboardmacro",
+    "productName": "Seraphim Keyboard Macro",
     "asar": true,
     "directories": {
       "output": "dist",
@@ -34,11 +34,11 @@
           "arch": ["x64"]
         }
       ],
-      "artifactName": "Seraphim-Admin-Panel.${ext}",
+      "artifactName": "Seraphim-Keyboard-Macro.${ext}",
       "signAndEditExecutable": false
     },
     "portable": {
-      "artifactName": "Seraphim-Admin-Panel.${ext}"
+      "artifactName": "Seraphim-Keyboard-Macro.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -46,7 +46,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Seraphim Admin Panel",
+      "shortcutName": "Seraphim Keyboard Macro",
       "runAfterFinish": true
     }
   },

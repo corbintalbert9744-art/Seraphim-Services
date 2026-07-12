@@ -1,17 +1,5 @@
-const PRODUCT_LABELS = {
-  "seraphim-tweaks": "Seraphim",
-  "fps-boost": "FPS Boost",
-  "bloom-reducer": "Bloom",
-  "zero-delay": "Zero Delay",
-  "keyboard-macro": "Keyboard Macro",
-};
-
 const NAV_ITEMS = [
   { id: "all", label: "All Keys", icon: "grid" },
-  { id: "bloom-reducer", label: "Bloom Reducer", icon: "target" },
-  { id: "seraphim-tweaks", label: "Seraphim Tweaks", icon: "bolt" },
-  { id: "fps-boost", label: "FPS Boost", icon: "chart" },
-  { id: "zero-delay", label: "Zero Delay", icon: "zap" },
   { id: "keyboard-macro", label: "Keyboard Macro", icon: "keyboard" },
 ];
 
@@ -30,7 +18,6 @@ const els = {
   modalClose: document.getElementById("modalClose"),
   cancelBtn: document.getElementById("cancelBtn"),
   generateBtn: document.getElementById("generateBtn"),
-  productSelect: document.getElementById("productSelect"),
   maxDevicesSelect: document.getElementById("maxDevicesSelect"),
   durationSelect: document.getElementById("durationSelect"),
   noteInput: document.getElementById("noteInput"),
@@ -40,10 +27,6 @@ const els = {
 function iconSvg(type) {
   const icons = {
     grid: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>',
-    target: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
-    bolt: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
-    chart: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 16l4-6 4 3 5-8"/></svg>',
-    zap: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
     keyboard: '<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg>',
   };
   return icons[type] || icons.grid;
@@ -100,7 +83,7 @@ function updateSectionTitle() {
 
 function renderTable(keys) {
   if (!keys.length) {
-    els.tableBody.innerHTML = `<tr><td colspan="9" class="empty-state">No license keys yet. Click "Create Key" to generate one.</td></tr>`;
+    els.tableBody.innerHTML = `<tr><td colspan="8" class="empty-state">No license keys yet. Click "Create Key" to generate one.</td></tr>`;
     return;
   }
 
@@ -111,7 +94,6 @@ function renderTable(keys) {
     return `
       <tr data-id="${k.id}">
         <td class="key-cell" title="${k.licenseKey}">${k.licenseKey}</td>
-        <td>${PRODUCT_LABELS[k.product] || k.product}</td>
         <td>${k.user ? k.user : '<span class="user-unregistered">Not registered</span>'}</td>
         <td><span class="badge ${statusClass}">${k.status.toUpperCase()}</span></td>
         <td class="device-cell">
@@ -173,10 +155,16 @@ async function handleAction(e) {
 }
 
 async function loadStats() {
-  const stats = await api("/api/stats");
-  els.statTotal.textContent = stats.total;
-  els.statActive.textContent = stats.active;
-  els.statDevices.textContent = stats.usedDevices;
+  try {
+    const stats = await api("/api/stats");
+    els.statTotal.textContent = stats.total ?? 0;
+    els.statActive.textContent = stats.active ?? 0;
+    els.statDevices.textContent = stats.usedDevices ?? 0;
+  } catch {
+    els.statTotal.textContent = "0";
+    els.statActive.textContent = "0";
+    els.statDevices.textContent = "0";
+  }
 }
 
 async function loadKeys() {
@@ -189,10 +177,6 @@ async function refresh() {
 }
 
 function populateModalSelects() {
-  els.productSelect.innerHTML = meta.products
-    .map((p) => `<option value="${p.id}">${p.label}</option>`)
-    .join("");
-
   els.maxDevicesSelect.innerHTML = meta.maxDevices
     .map((n) => `<option value="${n}">${n} Device${n > 1 ? "s" : ""}</option>`)
     .join("");
@@ -204,9 +188,6 @@ function populateModalSelects() {
 
 function openModal() {
   els.noteInput.value = "";
-  if (currentFilter !== "all") {
-    els.productSelect.value = currentFilter;
-  }
   els.modal.classList.add("open");
 }
 
@@ -216,7 +197,7 @@ function closeModal() {
 
 async function generateKey() {
   const body = {
-    product: els.productSelect.value,
+    product: "keyboard-macro",
     maxDevices: Number(els.maxDevicesSelect.value),
     duration: els.durationSelect.value,
     note: els.noteInput.value.trim(),

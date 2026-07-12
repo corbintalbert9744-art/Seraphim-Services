@@ -1,10 +1,9 @@
 @echo off
-title Build Seraphim Admin Panel Desktop App
+title Build Seraphim Keyboard Macro Desktop App
 cd /d "%~dp0"
 
 echo ================================================
-echo   Building Seraphim Admin Panel (.exe)
-echo   This creates a desktop app you can double-click
+echo   Building Seraphim Keyboard Macro (.exe)
 echo ================================================
 echo.
 
@@ -23,16 +22,15 @@ if errorlevel 1 goto :error
 
 echo.
 echo [3/3] Copying to your Desktop...
-if exist "dist\Seraphim-Admin-Panel.exe" (
-  copy /Y "dist\Seraphim-Admin-Panel.exe" "%USERPROFILE%\Desktop\Seraphim Admin Panel.exe"
+if exist "dist\Seraphim-Keyboard-Macro.exe" (
+  copy /Y "dist\Seraphim-Keyboard-Macro.exe" "%USERPROFILE%\Desktop\Seraphim Keyboard Macro.exe"
   echo.
   echo ================================================
   echo   SUCCESS!
-  echo   Double-click "Seraphim Admin Panel" on your Desktop
+  echo   Double-click "Seraphim Keyboard Macro" on your Desktop
   echo ================================================
 ) else (
-  echo Could not find dist\Seraphim-Admin-Panel.exe
-  echo Check tools\key-generator\dist\ for the built file.
+  echo Could not find dist\Seraphim-Keyboard-Macro.exe
   goto :error
 )
 

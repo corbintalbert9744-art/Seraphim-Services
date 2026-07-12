@@ -2,12 +2,10 @@ import { randomBytes, createHash } from "node:crypto";
 
 export const SERAPHIM_SECRET = "seraphim-macros-v2-secret-key";
 
+export const PRODUCT_ID = "keyboard-macro";
+
 export const PRODUCTS = [
-  { id: "seraphim-tweaks", label: "Seraphim Tweaks" },
-  { id: "fps-boost", label: "FPS Boost" },
-  { id: "bloom-reducer", label: "Bloom Reducer" },
-  { id: "zero-delay", label: "Zero Delay" },
-  { id: "keyboard-macro", label: "Keyboard Macro" },
+  { id: PRODUCT_ID, label: "Keyboard Macro" },
 ];
 
 export const MAX_DEVICE_OPTIONS = [1, 2, 3, 5, 10];
@@ -26,7 +24,7 @@ function randomHex(length) {
     .toUpperCase();
 }
 
-export function generateLicenseKey({ product, note = "" } = {}) {
+export function generateLicenseKey({ product = PRODUCT_ID, note = "" } = {}) {
   const entropy = createHash("sha256")
     .update(`${SERAPHIM_SECRET}:${product}:${note}:${Date.now()}:${randomBytes(16).toString("hex")}`)
     .digest("hex");

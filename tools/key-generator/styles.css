@@ -437,6 +437,17 @@ select.product-select {
   margin-top: 6px;
 }
 
+.product-fixed {
+  background: var(--bg);
+  border: 1px solid var(--border-gold);
+  border-radius: 8px;
+  color: var(--gold-bright);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 12px 14px;
+}
+
 textarea {
   resize: vertical;
   min-height: 72px;

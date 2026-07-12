@@ -58,7 +58,7 @@ async function handleApi(req, res, url) {
 
   if (req.method === "POST" && url.pathname === "/api/keys") {
     const body = await readBody(req);
-    const product = body.product || "seraphim-tweaks";
+    const product = body.product || "keyboard-macro";
     const maxDevices = Number(body.maxDevices) || 1;
     const duration = body.duration || "lifetime";
     const note = (body.note || "").trim();
