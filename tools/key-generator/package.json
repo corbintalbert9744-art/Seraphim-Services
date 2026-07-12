@@ -9,8 +9,9 @@
   "scripts": {
     "start": "electron electron-main.mjs",
     "electron": "electron electron-main.mjs",
-    "build": "electron-builder --win",
-    "build:portable": "electron-builder --win portable"
+    "build": "electron-builder --win portable",
+    "build:portable": "electron-builder --win portable",
+    "build:installer": "electron-builder --win nsis"
   },
   "build": {
     "appId": "com.seraphim.adminpanel",
@@ -23,16 +24,21 @@
     "files": [
       "**/*",
       "!dist/**",
-      "!data/keys.json"
+      "!data/keys.json",
+      "!node_modules/**/README*"
     ],
     "win": {
       "target": [
         {
-          "target": "nsis",
+          "target": "portable",
           "arch": ["x64"]
         }
       ],
-      "artifactName": "Seraphim-Admin-Panel-Setup.${ext}"
+      "artifactName": "Seraphim-Admin-Panel.${ext}",
+      "signAndEditExecutable": false
+    },
+    "portable": {
+      "artifactName": "Seraphim-Admin-Panel.${ext}"
     },
     "nsis": {
       "oneClick": false,
