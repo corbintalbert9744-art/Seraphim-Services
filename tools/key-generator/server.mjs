@@ -18,7 +18,6 @@ import {
 } from "./storage.mjs";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
-const PORT = Number(process.env.PORT || 5179);
 
 const mime = {
   ".html": "text/html; charset=utf-8",
@@ -93,28 +92,47 @@ async function handleApi(req, res, url) {
   return false;
 }
 
-const server = createServer(async (req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host}`);
+function createAppServer() {
+  return createServer(async (req, res) => {
+    const url = new URL(req.url, `http://${req.headers.host}`);
 
-  if (url.pathname.startsWith("/api/")) {
-    const handled = await handleApi(req, res, url);
-    if (handled !== false) return;
-    return json(res, 404, { error: "Not found" });
-  }
+    if (url.pathname.startsWith("/api/")) {
+      const handled = await handleApi(req, res, url);
+      if (handled !== false) return;
+      return json(res, 404, { error: "Not found" });
+    }
 
-  const path = url.pathname === "/" ? "/index.html" : url.pathname;
-  const filePath = join(__dirname, path.replace(/^\//, ""));
+    const path = url.pathname === "/" ? "/index.html" : url.pathname;
+    const filePath = join(__dirname, path.replace(/^\//, ""));
 
-  try {
-    const body = await readFile(filePath);
-    res.writeHead(200, { "Content-Type": mime[extname(filePath)] || "text/plain" });
-    res.end(body);
-  } catch {
-    res.writeHead(404, { "Content-Type": "text/plain" });
-    res.end("Not found");
-  }
-});
+    try {
+      const body = await readFile(filePath);
+      res.writeHead(200, { "Content-Type": mime[extname(filePath)] || "text/plain" });
+      res.end(body);
+    } catch {
+      res.writeHead(404, { "Content-Type": "text/plain" });
+      res.end("Not found");
+    }
+  });
+}
 
-server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Seraphim Admin Panel running at http://localhost:${PORT}`);
-});
+export function startServer(port = 0) {
+  const server = createAppServer();
+
+  return new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(port, "127.0.0.1", () => {
+      const address = server.address();
+      resolve({ server, port: typeof address === "object" ? address.port : port });
+    });
+  });
+}
+
+const isDirectRun = process.argv[1]?.endsWith("server.mjs");
+
+if (isDirectRun) {
+  const port = Number(process.env.PORT || 5179);
+  startServer(port).then(({ port: actualPort }) => {
+    console.log(`Seraphim Admin Panel running at http://localhost:${actualPort}`);
+  });
+}

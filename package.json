@@ -10,7 +10,8 @@
     "start": "NODE_ENV=production node dist/index.cjs",
     "check": "tsc",
     "db:push": "drizzle-kit push",
-    "keygen": "node tools/key-generator/server.mjs",
+    "keygen": "electron tools/key-generator/electron-main.mjs",
+    "keygen:server": "node tools/key-generator/server.mjs",
     "keygen:cli": "node tools/key-generator/cli.mjs"
   },
   "dependencies": {
@@ -95,6 +96,7 @@
     "@vitejs/plugin-react": "^5.0.4",
     "autoprefixer": "^10.4.21",
     "drizzle-kit": "^0.31.4",
+    "electron": "^35.1.5",
     "esbuild": "^0.25.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.14",
