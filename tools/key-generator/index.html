@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seraphim Macros — Key Generator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .bg {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(ellipse 800px 400px at 50% 0%, rgba(234, 179, 8, 0.12), transparent),
+        #0f0f0f;
+    }
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: #121212;
+      border: 1px solid #2a2a2a;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+    }
+    .brand {
+      margin-bottom: 24px;
+    }
+    .brand h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    .brand p {
+      color: #eab308;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .subtitle {
+      color: #a3a3a3;
+      font-size: 0.9rem;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #d4d4d4;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    input {
+      width: 100%;
+      background: #0f0f0f;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1rem;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus {
+      border-color: #eab308;
+    }
+    .field { margin-bottom: 20px; }
+    button {
+      width: 100%;
+      margin-top: 8px;
+      background: linear-gradient(135deg, #eab308, #d97706);
+      color: #0f0f0f;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 14px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    button:hover { opacity: 0.92; }
+    button:active { transform: scale(0.99); }
+    .result {
+      margin-top: 24px;
+      padding: 16px;
+      background: #0f0f0f;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      display: none;
+    }
+    .result.visible { display: block; }
+    .result-label {
+      font-size: 0.75rem;
+      color: #737373;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .result-key {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 1.1rem;
+      color: #eab308;
+      word-break: break-all;
+      user-select: all;
+    }
+    .copy-btn {
+      margin-top: 12px;
+      background: #1a1a1a;
+      color: #fff;
+      border: 1px solid #2a2a2a;
+      font-weight: 600;
+    }
+    .error {
+      margin-top: 16px;
+      color: #f87171;
+      font-size: 0.875rem;
+      display: none;
+    }
+    .error.visible { display: block; }
+    .note {
+      margin-top: 20px;
+      font-size: 0.75rem;
+      color: #525252;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="card">
+    <div class="brand">
+      <h1>Seraphim Macros</h1>
+      <p>License Key Generator</p>
+    </div>
+    <p class="subtitle">
+      Paste the customer's <strong>User ID</strong> from their macro app, then generate their activation key.
+    </p>
+
+    <div class="field">
+      <label for="userId">User ID</label>
+      <input id="userId" type="text" placeholder="e.g. A1B2C3D4-E5F6-7890" autocomplete="off" spellcheck="false" />
+    </div>
+
+    <button id="generateBtn" type="button">Generate License Key</button>
+
+    <p id="error" class="error"></p>
+
+    <div id="result" class="result">
+      <div class="result-label">License Key</div>
+      <div id="licenseKey" class="result-key"></div>
+      <button id="copyBtn" class="copy-btn" type="button">Copy to Clipboard</button>
+    </div>
+
+    <p class="note">Admin use only. Keys are tied to the User ID shown in the customer's Seraphim Macros app.</p>
+  </div>
+
+  <script type="module">
+    import { generateLicenseKey } from "./keygen.mjs";
+
+    const userIdInput = document.getElementById("userId");
+    const generateBtn = document.getElementById("generateBtn");
+    const resultBox = document.getElementById("result");
+    const licenseKeyEl = document.getElementById("licenseKey");
+    const copyBtn = document.getElementById("copyBtn");
+    const errorEl = document.getElementById("error");
+
+    generateBtn.addEventListener("click", async () => {
+      errorEl.classList.remove("visible");
+      resultBox.classList.remove("visible");
+
+      const userId = userIdInput.value.trim();
+      if (!userId) {
+        errorEl.textContent = "Please enter a User ID.";
+        errorEl.classList.add("visible");
+        return;
+      }
+
+      try {
+        const key = await generateLicenseKey(userId);
+        licenseKeyEl.textContent = key;
+        resultBox.classList.add("visible");
+      } catch (err) {
+        errorEl.textContent = err.message || "Failed to generate key.";
+        errorEl.classList.add("visible");
+      }
+    });
+
+    copyBtn.addEventListener("click", async () => {
+      const key = licenseKeyEl.textContent;
+      if (!key) return;
+      await navigator.clipboard.writeText(key);
+      copyBtn.textContent = "Copied!";
+      setTimeout(() => { copyBtn.textContent = "Copy to Clipboard"; }, 2000);
+    });
+
+    userIdInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") generateBtn.click();
+    });
+  </script>
+</body>
+</html>
