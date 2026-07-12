@@ -7,7 +7,8 @@
   "type": "module",
   "author": "Seraphim",
   "scripts": {
-    "start": "electron .",
+    "start": "electron electron-main.mjs",
+    "electron": "electron electron-main.mjs",
     "build": "electron-builder --win",
     "build:portable": "electron-builder --win portable"
   },

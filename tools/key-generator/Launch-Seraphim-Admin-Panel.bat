@@ -1,24 +1,29 @@
 @echo off
-title Seraphim Admin Panel
+title Seraphim Admin Panel (Electron)
 cd /d "%~dp0..\.."
 
-echo Starting Seraphim Admin Panel...
+echo ========================================
+echo   Seraphim Admin Panel - Electron App
+echo ========================================
 echo.
 
 if not exist "node_modules\electron" (
-  echo Installing dependencies first...
-  call npm install
-  if errorlevel 1 (
-    echo.
-    echo npm install failed. Make sure Node.js is installed.
-    pause
-    exit /b 1
+  if not exist "tools\key-generator\node_modules\electron" (
+    echo Installing dependencies...
+    call npm install
+    cd tools\key-generator
+    call npm install
+    cd ..\..
   )
 )
 
-call npm run keygen
+echo Launching Electron desktop window...
+echo.
+
+cd tools\key-generator
+call npm run start
 if errorlevel 1 (
   echo.
-  echo The app failed to start. See errors above.
+  echo Electron failed to start. See errors above.
   pause
 )
