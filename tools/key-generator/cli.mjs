@@ -1,23 +1,19 @@
-import { createHash } from "node:crypto";
-import { SERAPHIM_SECRET, toKeyChars } from "./keygen.mjs";
+import { generateLicenseKey, getExpiryDate } from "./keygen.mjs";
+import { createKey } from "./storage.mjs";
 
-function generateLicenseKeyNode(userId) {
-  const normalized = userId.trim().toUpperCase();
-  if (!normalized) {
-    throw new Error("User ID is required.");
-  }
+const product = process.argv[2] || "keyboard-macro";
+const maxDevices = Number(process.argv[3]) || 1;
+const duration = process.argv[4] || "lifetime";
+const note = process.argv[5] || "";
 
-  const hex = createHash("sha256")
-    .update(`${SERAPHIM_SECRET}:${normalized}`)
-    .digest("hex");
+const createdAt = new Date();
+const record = await createKey({
+  licenseKey: generateLicenseKey({ product, note }),
+  product,
+  maxDevices,
+  duration,
+  note,
+  expiresAt: getExpiryDate(duration, createdAt),
+});
 
-  return toKeyChars(hex);
-}
-
-const userId = process.argv[2];
-if (!userId) {
-  console.log("Usage: node cli.mjs <USER_ID>");
-  process.exit(1);
-}
-
-console.log(generateLicenseKeyNode(userId));
+console.log(record.licenseKey);

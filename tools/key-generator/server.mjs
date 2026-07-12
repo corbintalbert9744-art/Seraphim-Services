@@ -2,18 +2,108 @@ import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { join, extname } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  generateLicenseKey,
+  getExpiryDate,
+  PRODUCTS,
+  MAX_DEVICE_OPTIONS,
+  DURATION_OPTIONS,
+} from "./keygen.mjs";
+import {
+  listKeys,
+  createKey,
+  deleteKey,
+  updateKey,
+  getStats,
+} from "./storage.mjs";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const PORT = Number(process.env.PORT || 5179);
 
 const mime = {
   ".html": "text/html; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
 };
 
+function json(res, status, data) {
+  res.writeHead(status, { "Content-Type": "application/json" });
+  res.end(JSON.stringify(data));
+}
+
+async function readBody(req) {
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  if (!chunks.length) return {};
+  try {
+    return JSON.parse(Buffer.concat(chunks).toString("utf-8"));
+  } catch {
+    return {};
+  }
+}
+
+async function handleApi(req, res, url) {
+  if (req.method === "GET" && url.pathname === "/api/meta") {
+    return json(res, 200, { products: PRODUCTS, maxDevices: MAX_DEVICE_OPTIONS, durations: DURATION_OPTIONS });
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/stats") {
+    return json(res, 200, await getStats());
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/keys") {
+    const product = url.searchParams.get("product") || "all";
+    return json(res, 200, await listKeys(product));
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/keys") {
+    const body = await readBody(req);
+    const product = body.product || "seraphim-tweaks";
+    const maxDevices = Number(body.maxDevices) || 1;
+    const duration = body.duration || "lifetime";
+    const note = (body.note || "").trim();
+
+    const createdAt = new Date();
+    const record = await createKey({
+      licenseKey: generateLicenseKey({ product, note }),
+      product,
+      maxDevices,
+      duration,
+      note,
+      expiresAt: getExpiryDate(duration, createdAt),
+    });
+
+    return json(res, 201, record);
+  }
+
+  const deleteMatch = url.pathname.match(/^\/api\/keys\/([^/]+)$/);
+  if (req.method === "DELETE" && deleteMatch) {
+    const removed = await deleteKey(deleteMatch[1]);
+    return removed ? json(res, 200, { ok: true }) : json(res, 404, { error: "Key not found" });
+  }
+
+  const patchMatch = url.pathname.match(/^\/api\/keys\/([^/]+)$/);
+  if (req.method === "PATCH" && patchMatch) {
+    const body = await readBody(req);
+    const updated = await updateKey(patchMatch[1], body);
+    return updated ? json(res, 200, updated) : json(res, 404, { error: "Key not found" });
+  }
+
+  return false;
+}
+
 const server = createServer(async (req, res) => {
-  const path = req.url === "/" ? "/index.html" : req.url.split("?")[0];
-  const filePath = join(__dirname, path === "/" ? "index.html" : path.replace(/^\//, ""));
+  const url = new URL(req.url, `http://${req.headers.host}`);
+
+  if (url.pathname.startsWith("/api/")) {
+    const handled = await handleApi(req, res, url);
+    if (handled !== false) return;
+    return json(res, 404, { error: "Not found" });
+  }
+
+  const path = url.pathname === "/" ? "/index.html" : url.pathname;
+  const filePath = join(__dirname, path.replace(/^\//, ""));
 
   try {
     const body = await readFile(filePath);
@@ -26,5 +116,5 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Seraphim Key Generator running at http://localhost:${PORT}`);
+  console.log(`Seraphim Admin Panel running at http://localhost:${PORT}`);
 });
