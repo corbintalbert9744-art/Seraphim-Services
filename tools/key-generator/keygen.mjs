@@ -1,8 +1,12 @@
-import { randomBytes, createHash } from "node:crypto";
+import {
+  generateLicenseKey as signLicenseKey,
+  validateLicenseKey,
+  LICENSE_SECRET,
+  PRODUCT_ID as LICENSE_PRODUCT_ID,
+} from "./license.mjs";
 
-export const SERAPHIM_SECRET = "seraphim-macros-v2-secret-key";
-
-export const PRODUCT_ID = "keyboard-macro";
+export const SERAPHIM_SECRET = LICENSE_SECRET;
+export const PRODUCT_ID = LICENSE_PRODUCT_ID;
 
 export const PRODUCTS = [
   { id: PRODUCT_ID, label: "Keyboard Macro" },
@@ -17,27 +21,7 @@ export const DURATION_OPTIONS = [
   { id: "365d", label: "1 Year", days: 365 },
 ];
 
-function randomHex(length) {
-  return randomBytes(Math.ceil(length / 2))
-    .toString("hex")
-    .slice(0, length)
-    .toUpperCase();
-}
-
-export function generateLicenseKey({ product = PRODUCT_ID, note = "" } = {}) {
-  const entropy = createHash("sha256")
-    .update(`${SERAPHIM_SECRET}:${product}:${note}:${Date.now()}:${randomBytes(16).toString("hex")}`)
-    .digest("hex");
-
-  const segments = [
-    entropy.slice(0, 6),
-    entropy.slice(6, 12),
-    entropy.slice(12, 18),
-    entropy.slice(18, 24),
-  ].map((s) => s.toUpperCase());
-
-  return `SRPH-${segments.join("-")}`;
-}
+export { validateLicenseKey };
 
 export function getExpiryDate(durationId, createdAt = new Date()) {
   const option = DURATION_OPTIONS.find((d) => d.id === durationId);
@@ -46,4 +30,18 @@ export function getExpiryDate(durationId, createdAt = new Date()) {
   const expires = new Date(createdAt);
   expires.setDate(expires.getDate() + option.days);
   return expires.toISOString();
+}
+
+export function generateLicenseKey({
+  product = PRODUCT_ID,
+  maxDevices = 1,
+  expiresAt = null,
+  note = "",
+} = {}) {
+  if (product !== PRODUCT_ID) {
+    throw new Error(`Unsupported product: ${product}`);
+  }
+
+  void note;
+  return signLicenseKey({ maxDevices, expiresAt }).licenseKey;
 }

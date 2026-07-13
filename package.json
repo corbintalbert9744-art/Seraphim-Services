@@ -14,6 +14,7 @@
     "keygen:electron": "npm run start --prefix tools/key-generator",
     "keygen:server": "node tools/key-generator/server.mjs",
     "keygen:cli": "node tools/key-generator/cli.mjs",
+    "keygen:test": "node tools/key-generator/license.test.mjs",
     "keygen:build": "npm run build --prefix tools/key-generator",
     "keygen:exe": "npm run build:portable --prefix tools/key-generator",
     "keygen:pin": "powershell -ExecutionPolicy Bypass -File tools/key-generator/pin-shortcut.ps1"

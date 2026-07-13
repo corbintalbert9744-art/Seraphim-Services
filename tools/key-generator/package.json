@@ -11,7 +11,8 @@
     "electron": "electron electron-main.mjs",
     "build": "electron-builder --win portable",
     "build:portable": "electron-builder --win portable",
-    "build:installer": "electron-builder --win nsis"
+    "build:installer": "electron-builder --win nsis",
+    "test:license": "node license.test.mjs"
   },
   "build": {
     "appId": "com.seraphim.keyboardmacro",

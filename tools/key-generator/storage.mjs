@@ -39,6 +39,12 @@ export async function listKeys(productFilter = "all") {
   return keys.filter((k) => k.product === productFilter);
 }
 
+export async function findKeyByLicense(licenseKey) {
+  const normalized = String(licenseKey || "").trim().toUpperCase();
+  const keys = await readKeys();
+  return keys.find((k) => k.licenseKey.toUpperCase() === normalized) || null;
+}
+
 export async function createKey(entry) {
   const keys = await readKeys();
   const record = {

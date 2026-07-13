@@ -4,6 +4,7 @@ import { join, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   generateLicenseKey,
+  validateLicenseKey,
   getExpiryDate,
   PRODUCTS,
   MAX_DEVICE_OPTIONS,
@@ -15,6 +16,7 @@ import {
   deleteKey,
   updateKey,
   getStats,
+  findKeyByLicense,
 } from "./storage.mjs";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
@@ -64,16 +66,70 @@ async function handleApi(req, res, url) {
     const note = (body.note || "").trim();
 
     const createdAt = new Date();
+    const expiresAt = getExpiryDate(duration, createdAt);
     const record = await createKey({
-      licenseKey: generateLicenseKey({ product, note }),
+      licenseKey: generateLicenseKey({ product, maxDevices, expiresAt, note }),
       product,
       maxDevices,
       duration,
       note,
-      expiresAt: getExpiryDate(duration, createdAt),
+      expiresAt,
     });
 
     return json(res, 201, record);
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/validate") {
+    const body = await readBody(req);
+    const key = String(body.key || body.licenseKey || "").trim();
+    const result = validateLicenseKey(key);
+    return json(res, 200, result);
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/activate") {
+    const body = await readBody(req);
+    const key = String(body.key || body.licenseKey || "").trim();
+    const validation = validateLicenseKey(key);
+
+    if (!validation.valid) {
+      return json(res, 403, validation);
+    }
+
+    const record = await findKeyByLicense(key);
+    if (!record) {
+      return json(res, 200, {
+        ...validation,
+        activated: true,
+        managed: false,
+      });
+    }
+
+    if (record.status !== "active") {
+      return json(res, 403, { valid: false, reason: "Key revoked" });
+    }
+
+    const devicesUsed = record.devicesUsed || 0;
+    if (devicesUsed >= validation.maxDevices) {
+      return json(res, 403, {
+        valid: false,
+        reason: "Device limit reached",
+        maxDevices: validation.maxDevices,
+        devicesUsed,
+      });
+    }
+
+    const updated = await updateKey(record.id, {
+      devicesUsed: devicesUsed + 1,
+      lastUsedAt: new Date().toISOString(),
+    });
+
+    return json(res, 200, {
+      ...validation,
+      activated: true,
+      managed: true,
+      devicesUsed: updated.devicesUsed,
+      maxDevices: validation.maxDevices,
+    });
   }
 
   const deleteMatch = url.pathname.match(/^\/api\/keys\/([^/]+)$/);
