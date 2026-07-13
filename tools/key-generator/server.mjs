@@ -4,7 +4,6 @@ import { join, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   generateLicenseKey,
-  validateLicenseKey,
   getExpiryDate,
   PRODUCTS,
   MAX_DEVICE_OPTIONS,
@@ -20,6 +19,29 @@ import {
 } from "./storage.mjs";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
+
+async function validateStoredKey(key) {
+  const record = await findKeyByLicense(key);
+  if (!record) {
+    return { valid: false, reason: "Key not found" };
+  }
+
+  if (record.status !== "active") {
+    return { valid: false, reason: "Key revoked" };
+  }
+
+  if (record.expiresAt && Date.now() > new Date(record.expiresAt).getTime()) {
+    return { valid: false, reason: "Key expired", expiresAt: record.expiresAt };
+  }
+
+  return {
+    valid: true,
+    product: record.product,
+    maxDevices: record.maxDevices,
+    expiresAt: record.expiresAt,
+    id: record.id,
+  };
+}
 
 const mime = {
   ".html": "text/html; charset=utf-8",
@@ -66,14 +88,13 @@ async function handleApi(req, res, url) {
     const note = (body.note || "").trim();
 
     const createdAt = new Date();
-    const expiresAt = getExpiryDate(duration, createdAt);
     const record = await createKey({
-      licenseKey: generateLicenseKey({ product, maxDevices, expiresAt, note }),
+      licenseKey: generateLicenseKey({ product, note }),
       product,
       maxDevices,
       duration,
       note,
-      expiresAt,
+      expiresAt: getExpiryDate(duration, createdAt),
     });
 
     return json(res, 201, record);
@@ -82,14 +103,14 @@ async function handleApi(req, res, url) {
   if (req.method === "POST" && url.pathname === "/api/validate") {
     const body = await readBody(req);
     const key = String(body.key || body.licenseKey || "").trim();
-    const result = validateLicenseKey(key);
+    const result = await validateStoredKey(key);
     return json(res, 200, result);
   }
 
   if (req.method === "POST" && url.pathname === "/api/activate") {
     const body = await readBody(req);
     const key = String(body.key || body.licenseKey || "").trim();
-    const validation = validateLicenseKey(key);
+    const validation = await validateStoredKey(key);
 
     if (!validation.valid) {
       return json(res, 403, validation);
@@ -97,11 +118,7 @@ async function handleApi(req, res, url) {
 
     const record = await findKeyByLicense(key);
     if (!record) {
-      return json(res, 200, {
-        ...validation,
-        activated: true,
-        managed: false,
-      });
+      return json(res, 200, { ...validation, activated: true });
     }
 
     if (record.status !== "active") {
@@ -109,11 +126,11 @@ async function handleApi(req, res, url) {
     }
 
     const devicesUsed = record.devicesUsed || 0;
-    if (devicesUsed >= validation.maxDevices) {
+    if (devicesUsed >= (record.maxDevices || 1)) {
       return json(res, 403, {
         valid: false,
         reason: "Device limit reached",
-        maxDevices: validation.maxDevices,
+        maxDevices: record.maxDevices,
         devicesUsed,
       });
     }
@@ -126,9 +143,8 @@ async function handleApi(req, res, url) {
     return json(res, 200, {
       ...validation,
       activated: true,
-      managed: true,
       devicesUsed: updated.devicesUsed,
-      maxDevices: validation.maxDevices,
+      maxDevices: record.maxDevices,
     });
   }
 

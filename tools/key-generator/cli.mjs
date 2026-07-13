@@ -7,14 +7,13 @@ const duration = process.argv[4] || "lifetime";
 const note = process.argv[5] || "";
 
 const createdAt = new Date();
-const expiresAt = getExpiryDate(duration, createdAt);
 const record = await createKey({
-  licenseKey: generateLicenseKey({ product, maxDevices, expiresAt, note }),
+  licenseKey: generateLicenseKey({ product, note }),
   product,
   maxDevices,
   duration,
   note,
-  expiresAt,
+  expiresAt: getExpiryDate(duration, createdAt),
 });
 
 console.log(record.licenseKey);

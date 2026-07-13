@@ -1,7 +1,7 @@
 {
   "name": "seraphim-keyboard-macro",
   "productName": "Seraphim Keyboard Macro",
-  "version": "1.1.0",
+  "version": "1.2.1",
   "description": "Seraphim Keyboard Macro license key admin panel",
   "main": "electron-main.mjs",
   "type": "module",
@@ -11,8 +11,7 @@
     "electron": "electron electron-main.mjs",
     "build": "electron-builder --win portable",
     "build:portable": "electron-builder --win portable",
-    "build:installer": "electron-builder --win nsis",
-    "test:license": "node license.test.mjs"
+    "build:installer": "electron-builder --win nsis"
   },
   "build": {
     "appId": "com.seraphim.keyboardmacro",
