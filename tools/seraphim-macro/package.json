@@ -1,0 +1,52 @@
+{
+  "name": "seraphim-macro",
+  "productName": "Seraphim Macro",
+  "version": "1.0.4",
+  "description": "Seraphim Keyboard Macro client app",
+  "main": "main.js",
+  "type": "module",
+  "author": "Seraphim",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win portable",
+    "build:portable": "electron-builder --win portable",
+    "test:license": "node license.test.mjs"
+  },
+  "build": {
+    "appId": "com.seraphim.macro",
+    "productName": "Seraphim Macro",
+    "asar": true,
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "**/*",
+      "!dist/**",
+      "!node_modules/**/README*"
+    ],
+    "extraResources": [
+      {
+        "from": "macro-engine.js",
+        "to": "macro-engine.js"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "Seraphim-Macro.${ext}",
+      "signAndEditExecutable": false
+    },
+    "portable": {
+      "artifactName": "Seraphim-Macro.${ext}"
+    }
+  },
+  "devDependencies": {
+    "electron": "^35.1.5",
+    "electron-builder": "^25.1.8"
+  }
+}
