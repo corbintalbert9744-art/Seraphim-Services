@@ -1,0 +1,57 @@
+{
+  "name": "seraphim-keyboard-macro",
+  "productName": "Seraphim Keyboard Macro",
+  "version": "1.2.1",
+  "description": "Seraphim Keyboard Macro license key admin panel",
+  "main": "electron-main.mjs",
+  "type": "module",
+  "author": "Seraphim",
+  "scripts": {
+    "start": "electron electron-main.mjs",
+    "electron": "electron electron-main.mjs",
+    "build": "electron-builder --win portable",
+    "build:portable": "electron-builder --win portable",
+    "build:installer": "electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "com.seraphim.keyboardmacro",
+    "productName": "Seraphim Keyboard Macro",
+    "asar": true,
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "**/*",
+      "!dist/**",
+      "!data/keys.json",
+      "!node_modules/**/README*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "Seraphim-Keyboard-Macro.${ext}",
+      "signAndEditExecutable": false
+    },
+    "portable": {
+      "artifactName": "Seraphim-Keyboard-Macro.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Seraphim Keyboard Macro",
+      "runAfterFinish": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^35.1.5",
+    "electron-builder": "^25.1.8"
+  }
+}

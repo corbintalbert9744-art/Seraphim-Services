@@ -9,7 +9,14 @@
     "build": "tsx script/build.ts",
     "start": "NODE_ENV=production node dist/index.cjs",
     "check": "tsc",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "keygen": "npm run start --prefix tools/key-generator",
+    "keygen:electron": "npm run start --prefix tools/key-generator",
+    "keygen:server": "node tools/key-generator/server.mjs",
+    "keygen:cli": "node tools/key-generator/cli.mjs",
+    "keygen:build": "npm run build --prefix tools/key-generator",
+    "keygen:exe": "npm run build:portable --prefix tools/key-generator",
+    "keygen:pin": "powershell -ExecutionPolicy Bypass -File tools/key-generator/pin-shortcut.ps1"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -93,6 +100,7 @@
     "@vitejs/plugin-react": "^5.0.4",
     "autoprefixer": "^10.4.21",
     "drizzle-kit": "^0.31.4",
+    "electron": "^35.1.5",
     "esbuild": "^0.25.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.14",
